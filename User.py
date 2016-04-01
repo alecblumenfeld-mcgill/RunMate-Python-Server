@@ -307,6 +307,6 @@ class AuthenticatedUser(User) :
 				        "objectId": s
 				    }
 				}, sort_keys=True))
-			return newList
+			return json.dumps(newList)
 if __name__ == '__main__':
 	print(AuthenticatedUser(userId="MO77PuoPBt").getFriendSuggestions())
