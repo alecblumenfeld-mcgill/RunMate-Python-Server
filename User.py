@@ -8,7 +8,6 @@ class User:
 	def __init__(self, **args) :
 
 		self.error = False 
-		print(args['userId'])
 		if 'userId' in args:
 			user = self.connection(args['userId'])
 			if not user :
@@ -310,4 +309,4 @@ class AuthenticatedUser(User) :
 				}, sort_keys=True))
 			return newList
 if __name__ == '__main__':
-	print(AuthenticatedUser(userId="MO77PuoPBt"))
+	print(AuthenticatedUser(userId="MO77PuoPBt").getFriendSuggestions())
