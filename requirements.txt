@@ -24,3 +24,5 @@ gunicorn
 itsdangerous==0.24
 psycopg2==2.6
 numpy
+autoenv==1.0.0
+virtualenv==15.0.1
