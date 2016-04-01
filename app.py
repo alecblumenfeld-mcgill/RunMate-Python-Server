@@ -7,14 +7,16 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 
 import os
 from flask import Flask, render_template, request, redirect, url_for
+from flask.ext.cors import CORS, cross_origin
+
 import logging
 from User import User, AuthenticatedUser
 from Run import Run
 from Goal import Goal
 
 app = Flask(__name__)
-
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'this_should_be_configured')
+cors = CORS(app, resources={r"/routines": {"origins": "*"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 ###
@@ -29,9 +31,9 @@ def home():
 
 
 @app.route('/routines/<userId>')
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def routines(userId):
     thisUser = User(userId=userId)
-    print(thisUser)
     return thisUser.getRoutines()
 
 
@@ -41,9 +43,7 @@ def routines(userId):
 
 @app.route('/buddies/<userId>')
 def buddies(userId):
-
     thisAuthUser = AuthenticatedUser(userId)
-
     return thisAuthUser.getFriendSuggestions()
 
 
@@ -52,11 +52,9 @@ def buddies(userId):
 def checkTrophies():
     userId = request.args.get('userId')
     runId = request.args.get('runId')
-
     thisRunner = AuthenticatedUser(userId)
     thisRun = Run(thisRunner.sessionToken, runId)
 
-    #   thisRun.getTrophies()
 
 @app.after_request
 def add_header(response):

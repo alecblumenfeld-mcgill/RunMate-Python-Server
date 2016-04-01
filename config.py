@@ -3,6 +3,7 @@ from operator import itemgetter
 connection = http.client.HTTPSConnection('api.parse.com', 443, timeout = 5)
 connection.connect()
 
-# def restartConnection() :
-#     connection.close()
-#     connection.connect()
+def restartConnection() :
+    connection.close()
+    connection.connect()
+
