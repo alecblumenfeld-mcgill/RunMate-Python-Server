@@ -31,7 +31,7 @@ def home():
 @app.route('/routines/<userId>')
 def routines(userId):
     thisUser = User(userId=userId)
-    print(thisUser)
+    #print(thisUser)
     return thisUser.getRoutines()
 
 
