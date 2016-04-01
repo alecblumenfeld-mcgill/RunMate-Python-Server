@@ -7,6 +7,10 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 
 import os
 from flask import Flask, render_template, request, redirect, url_for
+import logging
+from User import User, AuthenticatedUser
+from Run import Run
+from Goal import Goal
 
 app = Flask(__name__)
 
@@ -23,22 +27,35 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html')
+
+@app.route('/routines/<userId>')
+def routines(userId):
+    thisUser = User(userId=userId)
+    return thisUser.getRoutines()
 
 
 ###
 # The functions below should be applicable to all Flask apps.
 ###
 
-@app.route('/<file_name>.txt')
-def send_text_file(file_name):
-    """Send your static text file."""
-    file_dot_text = file_name + '.txt'
-    return app.send_static_file(file_dot_text)
+@app.route('/buddies/<userId>')
+def buddies(userId):
 
+    thisAuthUser = AuthenticatedUser(userId)
+
+    return thisAuthUser.getFriendSuggestions()
+
+
+
+@app.route('/checkTrophies' , methods=['GET'])
+def checkTrophies():
+    userId = request.args.get('userId')
+    runId = request.args.get('runId')
+
+    thisRunner = AuthenticatedUser(userId)
+    thisRun = Run(thisRunner.sessionToken, runId)
+
+    #   thisRun.getTrophies()
 
 @app.after_request
 def add_header(response):
