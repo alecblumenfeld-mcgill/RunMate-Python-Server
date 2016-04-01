@@ -54,6 +54,9 @@ class User:
 		else :
 			self.accessToken = None
 
+		if 'name' in user :
+			self.name = user['name']
+
 		self.userId = user['objectId']
 
 		self.avgDistance = self.getAvgDistance()
@@ -270,9 +273,9 @@ class AuthenticatedUser(User) :
 			# TODO: Consider mutual friends
 			if friend.userId != 0 :
 				if friend.avgDistance == 0 :
-					noneList.append(friend.userId)
+					noneList.append(friend.name)
 				else :
-					avgList.append([friend.userId, friend.avgDistance])
+					avgList.append([friend.name, friend.avgDistance])
 
 		if not avgList :
 			return None # Error: No suggestions, your friends have not gone on any runs yet
@@ -298,14 +301,4 @@ class AuthenticatedUser(User) :
 			return None
 		else :
 			newList = []
-			for s in suggestions:
-			#return json.dumps(suggestions, sort_keys=True, indent=2)
-				newList.append(json.dumps({ 
-					"user":{
-				        "__type": "Pointer",
-				        "className": "_User",
-				        "objectId": s
-				    }
-				}, sort_keys=True))
-			return json.dumps(newList)
-
+			return json.dumps(suggestions, sort_keys=True, indent=2)
