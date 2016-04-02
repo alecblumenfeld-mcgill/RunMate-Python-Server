@@ -1,5 +1,5 @@
 from config import *
-from flask import jsonify
+
 class User:
 
 	def __init__(self, **args) :
@@ -19,10 +19,10 @@ class User:
 				user = tempUser[0]
 			else :
 				self.error = True
-				return None # Error: User not found
+				return jsonify(error="User not found")
 
 		if 'code' in user :
-			return None # Error: User does not exist
+			return jsonify(error="User not found")
 
 		if 'runNum' in user :
 			# User has not gone on any runs
@@ -145,7 +145,7 @@ class User:
 	def getAllRoutines(self) :
 
 		if self.goalWeight>self.weight :
-			return None # Error: goalWeight higher than current weight
+			jsonify(error="Goal weight higher than current weight")
 
 		if self.avgDistance == 0 :
 			avgDist = 4 # Default value for run variations
@@ -172,7 +172,7 @@ class User:
 		routines = self.getAllRoutines()
 
 		if routines == None :
-			return None # Error: Unable to calculate; suggest adding more time
+			return jsonify(error="Unable to calculate routines, please allot more time to reach your goal weight")
 
 		suggestions = []
 		# Remove duplicates
@@ -191,11 +191,9 @@ class User:
 					break
 
 		if suggestions == [] :
-			# If None is returned, show error message saying that the user needs to allot more time for their goal weight loss
-			return None 
+			return jsonify(error="Unable to calculate routines, please allot more time to reach your goal weight")
 		else :
-			return json.dumps(suggestions, sort_keys=True, indent=2)
-			
+			return jsonify(routines=suggestions)
 class AuthenticatedUser(User) :
 
 	def __init__(self, userId) :

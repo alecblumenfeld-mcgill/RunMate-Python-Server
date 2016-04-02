@@ -1,4 +1,5 @@
 from config import *
+from Goal import Goal
 
 class Run :
 
@@ -34,7 +35,7 @@ class Run :
 			run = result[0]
 		else :
 			self.error = True
-			return None # Error : Run not found
+			return jsonify(error="Run not found")
 
 		self.error = False
 
@@ -60,18 +61,19 @@ class Run :
 		     })
 			results = json.loads(connection.getresponse().read().decode('utf-8'))['results']
 		except ValueError:
-			return None # Error: RunLocs missing for run
+			print("ValueError")
+			return jsonify(error="RunLocs missing for run")
 
 		for runLoc in results :
 			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
 
 		locList = sorted(locList, key=itemgetter(0))
-		print(locList)
+		return locList
 
 	def getTrophies(self) :
 
 		if self.error == True :
-			return None # Error: Run not found
+			return jsonify(error="Run not found")
 
 		# Retrieve all uncompleted user goals
 		params = urllib.parse.urlencode({"where":json.dumps({
@@ -99,20 +101,12 @@ class Run :
 		if goal.distance > self.distance :
 			return False
 		elif ((goal.distance <= self.distance) & (goal.time == 0)) :
-			goal.setCompleted()
+			return goal.setCompleted()
 		else :
-			return False # working on this
-			for loc in self.runLocations :
-				params = urllib.parse.urlencode({"where":json.dumps({
-					"objectId" : loc
-				})})
-				connection.request('GET', '/1/classes/RunLocation?%s' % params, '', {
-			       "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
-			       "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY']
-			     })
-				runLoc = json.loads(connection.getresponse().read().decode('utf-8'))['results'][0]
-				locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
-			locList = sorted(locList, key=itemgetter(0))
-			print(locList)
+			if self.runData == None :
+				return jsonify(error="RunLocations missing")
+			else :
+				loops = goal.distance / self.distance
+				return jsonify(error="Method not done")
 
 
