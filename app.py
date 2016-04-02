@@ -15,8 +15,8 @@ from Run import Run
 from Goal import Goal
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/routines": {"origins": "*"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
+
+CORS(app)
 
 
 ###
@@ -31,7 +31,6 @@ def home():
 
 
 @app.route('/routines/<userId>')
-@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def routines(userId):
     thisUser = User(userId=userId)
     return thisUser.getRoutines()
