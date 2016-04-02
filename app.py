@@ -32,9 +32,13 @@ def home():
 
 @app.route('/routines/<userId>')
 def routines(userId):
-    thisUser = User(userId=userId)
-    return thisUser.getRoutines()
+    try:
+        thisUser = User(userId=userId)
+        return thisUser.getRoutines()
 
+    except :
+        raise
+    
 
 ###
 # The functions below should be applicable to all Flask apps.
@@ -42,6 +46,7 @@ def routines(userId):
 
 @app.route('/buddies/<userId>')
 def buddies(userId):
+
     thisAuthUser = AuthenticatedUser(userId)
     return thisAuthUser.getFriendSuggestions()
 
@@ -72,6 +77,9 @@ def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
 
+@app.errorhandler(Exception)
+def exception_handler(error):
+    return "!!!!"  + repr(error)
 
 if __name__ == '__main__':
     app.run(debug=True)
