@@ -1,5 +1,5 @@
 from config import *
-
+from flask import jsonify
 class User:
 
 	def __init__(self, **args) :
@@ -275,7 +275,7 @@ class AuthenticatedUser(User) :
 					avgList.append([friend.name, friend.avgDistance])
 
 		if not avgList :
-			return None # Error: No suggestions, your friends have not gone on any runs yet
+			return jsonify(error="No friends found") # Error: No suggestions, your friends have not gone on any runs yet
 		elif len(avgList) <= 3 :
 			for val in avgList :
 				suggestions.append(val[0])
@@ -295,9 +295,7 @@ class AuthenticatedUser(User) :
 					suggestions.append(val[0])
 
 		if suggestions == [] :
-			return None
+			return jsonify(error="No friends found")
 		else :
 			newList = []
 			return json.dumps(suggestions, sort_keys=True, indent=2)
-
-
