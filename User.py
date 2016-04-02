@@ -298,4 +298,4 @@ class AuthenticatedUser(User) :
 			return jsonify(error="No friends found")
 		else :
 			newList = []
-			return json.dumps(suggestions, sort_keys=True, indent=2)
+			return jsonify(users=suggestions)
