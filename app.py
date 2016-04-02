@@ -47,8 +47,7 @@ def routines(userId):
 def buddies(userId):
 
     thisAuthUser = AuthenticatedUser(userId)
-    print(thisAuthUser.getFriendSuggestions())
-    return "ok"
+    return thisAuthUser.getFriendSuggestions()
 
 
 @app.route('/checkTrophies' , methods=['GET'])
