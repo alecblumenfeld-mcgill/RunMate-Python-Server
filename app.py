@@ -35,7 +35,6 @@ def routines(userId):
     try:
         thisUser = User(userId=userId)
         return thisUser.getRoutines()
-
     except :
         raise
     
@@ -77,9 +76,9 @@ def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
 
-@app.errorhandler(Exception)
-def exception_handler(error):
-    return "!!!!"  + repr(error)
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error('Server Error: %s', (error))
 
 if __name__ == '__main__':
     app.run(debug=True)
