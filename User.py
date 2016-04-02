@@ -299,3 +299,7 @@ class AuthenticatedUser(User) :
 		else :
 			newList = []
 			return json.dumps(suggestions, sort_keys=True, indent=2)
+
+
+thisAuthUser = AuthenticatedUser("MO77PuoPBt")
+print(thisAuthUser.getFriendSuggestions())
