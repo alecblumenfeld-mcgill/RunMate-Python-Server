@@ -6,8 +6,4 @@ connection.connect()
 def restartConnection() :
     connection.close()
     connection.connect()
-<<<<<<< HEAD
-
-=======
     
->>>>>>> 22f01164f9d659de1cece73692e6306d048dd449
