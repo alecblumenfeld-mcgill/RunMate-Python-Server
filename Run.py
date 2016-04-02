@@ -1,7 +1,5 @@
 from config import *
 
-
-    
 class Run :
 
 	def __init__(self, sessionToken, runId) :
@@ -11,23 +9,23 @@ class Run :
 		})})
 		try :
 			connection.request('GET', '/1/classes/Run?%s' % params, '', {
-	     	  "X-Parse-Application-Id": "dX9JzxUVmJXzIqKh3keU7GCHTRwzqqp3dmI9TuRu",
-	   		  "X-Parse-REST-API-Key": "0N1cPT6n8yz4dLegykA0D93EKToELIKrtyjKeRPX",
+	     	  "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
+	   		  "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY'],
 	   		  "X-Parse-Session-Token" : str(sessionToken)
 	   		 })
 			result = json.loads(connection.getresponse().read().decode('utf-8'))['results']
 		except http.client.RemoteDisconnected :
 			connection.request('GET', '/1/classes/Run?%s' % params, '', {
-	     	  "X-Parse-Application-Id": "dX9JzxUVmJXzIqKh3keU7GCHTRwzqqp3dmI9TuRu",
-	   		  "X-Parse-REST-API-Key": "0N1cPT6n8yz4dLegykA0D93EKToELIKrtyjKeRPX",
+	     	  "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
+	   		  "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY'],
 	   		  "X-Parse-Session-Token" : str(sessionToken)
 	   		 })
 			result = json.loads(connection.getresponse().read().decode('utf-8'))['results']
 		except :
 			restartConnection()
 			connection.request('GET', '/1/classes/Run?%s' % params, '', {
-	     	  "X-Parse-Application-Id": "dX9JzxUVmJXzIqKh3keU7GCHTRwzqqp3dmI9TuRu",
-	   		  "X-Parse-REST-API-Key": "0N1cPT6n8yz4dLegykA0D93EKToELIKrtyjKeRPX",
+	     	  "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
+	   		  "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY'],
 	   		  "X-Parse-Session-Token" : str(sessionToken)
 	   		 })
 			result = json.loads(connection.getresponse().read().decode('utf-8'))['results']
@@ -42,9 +40,33 @@ class Run :
 
 		self.distance = run['distance']
 		self.userId = run['user']
-		# self.userId = str(run['ACL'])[2:11])
 		self.runId = runId
 		self.runLocations = run['runlocations']
+		self.runData = self.pullRunLocations()
+
+	def pullRunLocations(self) :
+
+		locList = []
+		
+		try :
+			params = urllib.parse.urlencode({"where":json.dumps({
+				"objectId": {
+					"$in" : self.runLocations
+				}
+			})})
+			connection.request('GET', '/1/classes/RunLocation?%s' % params, '', {
+		       "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
+		       "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY']
+		     })
+			results = json.loads(connection.getresponse().read().decode('utf-8'))['results']
+		except ValueError:
+			return None # Error: RunLocs missing for run
+
+		for runLoc in results :
+			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
+
+		locList = sorted(locList, key=itemgetter(0))
+		print(locList)
 
 	def getTrophies(self) :
 

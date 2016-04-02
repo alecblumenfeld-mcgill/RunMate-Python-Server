@@ -1,8 +1,5 @@
 from config import *
 
-def restartConnection() :
-    connection.close()
-    connection.connect()
 class User:
 
 	def __init__(self, **args) :
@@ -53,6 +50,9 @@ class User:
 			self.accessToken = user['authData']['facebook']['access_token']
 		else :
 			self.accessToken = None
+
+		if 'name' in user :
+			self.name = user['name']
 
 		self.userId = user['objectId']
 
@@ -270,9 +270,9 @@ class AuthenticatedUser(User) :
 			# TODO: Consider mutual friends
 			if friend.userId != 0 :
 				if friend.avgDistance == 0 :
-					noneList.append(friend.userId)
+					noneList.append(friend.name)
 				else :
-					avgList.append([friend.userId, friend.avgDistance])
+					avgList.append([friend.name, friend.avgDistance])
 
 		if not avgList :
 			return None # Error: No suggestions, your friends have not gone on any runs yet
@@ -298,15 +298,4 @@ class AuthenticatedUser(User) :
 			return None
 		else :
 			newList = []
-			for s in suggestions:
-			#return json.dumps(suggestions, sort_keys=True, indent=2)
-				newList.append(json.dumps({ 
-					"user":{
-				        "__type": "Pointer",
-				        "className": "_User",
-				        "objectId": s
-				    }
-				}, sort_keys=True))
-			return json.dumps(newList)
-if __name__ == '__main__':
-	print(AuthenticatedUser(userId="MO77PuoPBt").getFriendSuggestions())
+			return json.dumps(suggestions, sort_keys=True, indent=2)

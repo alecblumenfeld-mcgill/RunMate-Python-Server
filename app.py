@@ -34,6 +34,10 @@ def home():
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def routines(userId):
     thisUser = User(userId=userId)
+<<<<<<< .merge_file_SnE6Vd
+=======
+    #print(thisUser)
+>>>>>>> .merge_file_l2k8I4
     return thisUser.getRoutines()
 
 
