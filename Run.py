@@ -1,7 +1,5 @@
 from config import *
 
-
-    
 class Run :
 
 	def __init__(self, sessionToken, runId) :
@@ -42,7 +40,6 @@ class Run :
 
 		self.distance = run['distance']
 		self.userId = run['user']
-		# self.userId = str(run['ACL'])[2:11])
 		self.runId = runId
 		self.runLocations = run['runlocations']
 		self.runData = self.pullRunLocations()
@@ -51,17 +48,25 @@ class Run :
 
 		locList = []
 		
-		params = urllib.parse.urlencode({"where":json.dumps({
-			"objectId": {
-				"$in" : self.runLocations
-			}
-		})})
-		connection.request('GET', '/1/classes/RunLocation?%s' % params, '', {
-	       "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
-	       "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY']
-	     })
-		results = json.loads(connection.getresponse().read().decode('utf-8'))
-		print(results)
+		try :
+			params = urllib.parse.urlencode({"where":json.dumps({
+				"objectId": {
+					"$in" : self.runLocations
+				}
+			})})
+			connection.request('GET', '/1/classes/RunLocation?%s' % params, '', {
+		       "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
+		       "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY']
+		     })
+			results = json.loads(connection.getresponse().read().decode('utf-8'))['results']
+		except ValueError:
+			return None # Error: RunLocs missing for run
+
+		for runLoc in results :
+			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
+
+		locList = sorted(locList, key=itemgetter(0))
+		print(locList)
 
 	def getTrophies(self) :
 

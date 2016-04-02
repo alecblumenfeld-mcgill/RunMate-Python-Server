@@ -1,8 +1,5 @@
 from config import *
 
-def restartConnection() :
-    connection.close()
-    connection.connect()
 class User:
 
 	def __init__(self, **args) :
