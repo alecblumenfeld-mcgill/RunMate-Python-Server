@@ -50,8 +50,6 @@ class Run :
 			for l in self.runData :
 				distanceList.append(l[0])
 			self.runDistances = distanceList
-		print(self.runData)
-		print(self.runDistances)
 
 	def pullRunLocations(self) :
 
@@ -103,6 +101,7 @@ class Run :
 			if self.checkTrophy(goal) :
 				#print("woohoo")
 				return goal.setCompleted()
+		return jsonify("No goals completed")
 
 	def findNearest(self, array, value):
 	    idx = (np.abs(array-value)).argmin()
