@@ -76,13 +76,12 @@ class Run :
 			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp'])])
 
 		locList = sorted(locList, key=itemgetter(0))
-
 		return locList
 
 	def getTrophies(self) :
 
 		if self.error == True :
-			return None # Error: Run not found
+			return jsonify(error="Run not found")
 
 		# Retrieve all uncompleted user goals
 		params = urllib.parse.urlencode({"where":json.dumps({
