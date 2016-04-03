@@ -101,7 +101,7 @@ class Run :
 			if self.checkTrophy(goal) :
 				#print("woohoo")
 				return goal.setCompleted()
-		return jsonify("No goals completed")
+		return jsonify(error="No goals completed")
 
 	def findNearest(self, array, value):
 	    idx = (np.abs(array-value)).argmin()
