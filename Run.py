@@ -1,8 +1,11 @@
 from config import *
+from Goal import Goal
 
 class Run :
 
 	def __init__(self, sessionToken, runId) :
+
+		distanceList = []
 		
 		params = urllib.parse.urlencode({"where":json.dumps({
 			"objectId" : runId
@@ -34,7 +37,7 @@ class Run :
 			run = result[0]
 		else :
 			self.error = True
-			return None # Error : Run not found
+			return jsonify(error="Run not found")
 
 		self.error = False
 
@@ -43,6 +46,12 @@ class Run :
 		self.runId = runId
 		self.runLocations = run['runlocations']
 		self.runData = self.pullRunLocations()
+		if self.runData :
+			for l in self.runData :
+				distanceList.append(l[0])
+			self.runDistances = distanceList
+		print(self.runData)
+		print(self.runDistances)
 
 	def pullRunLocations(self) :
 
@@ -60,13 +69,15 @@ class Run :
 		     })
 			results = json.loads(connection.getresponse().read().decode('utf-8'))['results']
 		except ValueError:
-			return None # Error: RunLocs missing for run
+			print("ValueError")
+			return jsonify(error="RunLocs missing for run")
 
 		for runLoc in results :
-			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
+			locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp'])])
 
 		locList = sorted(locList, key=itemgetter(0))
-		print(locList)
+
+		return locList
 
 	def getTrophies(self) :
 
@@ -90,7 +101,13 @@ class Run :
 		# Filter goals that shouldn't be considered
 		for t in trophyList :
 			goal = Goal(str(t['objectId']))
-			self.checkTrophy(goal)
+			if self.checkTrophy(goal) :
+				#print("woohoo")
+				return goal.setCompleted()
+
+	def findNearest(self, array, value):
+	    idx = (np.abs(array-value)).argmin()
+	    return array[idx]
 
 	def checkTrophy(self, goal) :
 
@@ -99,20 +116,33 @@ class Run :
 		if goal.distance > self.distance :
 			return False
 		elif ((goal.distance <= self.distance) & (goal.time == 0)) :
-			goal.setCompleted()
+			return True
 		else :
-			return False # working on this
-			for loc in self.runLocations :
-				params = urllib.parse.urlencode({"where":json.dumps({
-					"objectId" : loc
-				})})
-				connection.request('GET', '/1/classes/RunLocation?%s' % params, '', {
-			       "X-Parse-Application-Id": os.environ['RUNMATE_CONST_APPID'],
-			       "X-Parse-REST-API-Key": os.environ['RUNMATE_CONST_APIKEY']
-			     })
-				runLoc = json.loads(connection.getresponse().read().decode('utf-8'))['results'][0]
-				locList.append([runLoc['distance']*0.00062137, datetime.datetime.fromtimestamp(runLoc['timestamp']).strftime('%Y-%m-%d %H:%M:%S')])
-			locList = sorted(locList, key=itemgetter(0))
-			print(locList)
-
-
+			if self.runData == None :
+				return False
+			else :
+				loops = goal.distance / self.distance
+				l = np.arange(0.0, loops, .1)
+				for i in l :
+					startMile = i
+					#print ("startMile = %s" % startMile)
+					endMile = i + goal.distance
+					#print ("endMile = %s" % endMile)
+					startInfo = self.findNearest(self.runDistances, startMile)
+					#print("startInfo = %s" % startInfo)
+					endInfo = self.findNearest(self.runDistances, endMile)
+					#print("endInfo = %s" % endInfo)
+					for d in self.runData :
+						if (d[0] == startInfo) :
+							startInfo = d
+							print(d)
+						if (d[0] == endInfo) :
+							endInfo = d
+							print(d)
+					diffTime = endInfo[1] - startInfo[1]
+					#print(diffTime)
+					#print(goal.time)
+					if diffTime.seconds == goal.time :
+						#print("yes")
+						return True
+				return False
