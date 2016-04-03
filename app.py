@@ -34,6 +34,8 @@ def home():
 def routines(userId):
     try:
         thisUser = User(userId=userId)
+        if thisUser == None :
+            return jsonify(error="User not found")
         return thisUser.getRoutines()
     except :
         raise
@@ -47,6 +49,8 @@ def routines(userId):
 def buddies(userId):
 
     thisAuthUser = AuthenticatedUser(userId)
+    if thisAuthUser == None
+        return jsonify(error="User not found")
     return thisAuthUser.getFriendSuggestions()
 
 
@@ -55,6 +59,8 @@ def checkTrophies():
     userId = request.args.get('userId')
     runId = request.args.get('runId')
     thisRunner = AuthenticatedUser(userId)
+    if thisRunner == None :
+        return jsonify(error="User not found")
     thisRun = Run(thisRunner.sessionToken, runId)
     return thisRun.getTrophies()
 
