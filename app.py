@@ -56,9 +56,7 @@ def checkTrophies():
     runId = request.args.get('runId')
     thisRunner = AuthenticatedUser(userId)
     thisRun = Run(thisRunner.sessionToken, runId)
-
-
-    #   thisRun.getTrophies()
+    return thisRun.getTrophies()
 
 @app.after_request
 def add_header(response):
