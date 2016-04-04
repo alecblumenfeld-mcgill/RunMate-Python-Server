@@ -19,10 +19,7 @@ class User:
 				user = tempUser[0]
 			else :
 				self.error = True
-				return None
-
-		if 'code' in user :
-			return None
+				user = []
 
 		if 'runNum' in user :
 			# User has not gone on any runs
@@ -54,7 +51,13 @@ class User:
 		if 'name' in user :
 			self.name = user['name']
 
-		self.userId = user['objectId']
+		if 'objectId' in user :
+			self.userId = user['objectId']
+		else :
+			self.userId = 0
+
+		if 'code' in user :
+			return None
 
 		self.avgDistance = self.getAvgDistance()
 
@@ -259,9 +262,7 @@ class AuthenticatedUser(User) :
 			for f in friends['data'] :
 				fId = f['id']
 
-				friend = User(param1="facebookIdPublic", param2=fId)
-				if friend.error == True :
-					break
+				friend = User(param1="facebookIdPublic", param2=str(fId))
 
 				# TODO: Factor in runs per week if possible
 				# TODO: Consider mutual friends
@@ -273,12 +274,12 @@ class AuthenticatedUser(User) :
 		except KeyError:
 			return jsonify(error="No friends found")
 
-		if (not avgList) & (not noneList) :
+		if (len(avgList) == 0) & (len(noneList)==0) :
 			suggestions = []
-		elif (not avgList) & (len(noneList)) <= 3 :
+		elif (len(avgList) == 0) & (len(noneList)<=3) :
 			for i in noneList :
 				suggestions.append(i)
-		elif (not avgList) & (len(noneList)) >3 :
+		elif (len(avgList) == 0) & (len(noneList)) >3 :
 			for i in noneList[:3] :
 				suggestions.append(i[0])
 		elif len(avgList) <= 3 :
@@ -302,6 +303,5 @@ class AuthenticatedUser(User) :
 		if suggestions == [] :
 			return jsonify(error="No friends found")
 		else :
-			newList = []
 			return jsonify(users=suggestions)
 		return jsonify(error="No friends found")
