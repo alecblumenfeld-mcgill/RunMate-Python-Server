@@ -259,8 +259,6 @@ class AuthenticatedUser(User) :
 			for f in friends['data'] :
 				fId = f['id']
 
-				# Retrieve user object per friend
-
 				friend = User(param1="facebookIdPublic", param2=fId)
 				if friend.error == True :
 					break
