@@ -32,10 +32,13 @@ def home():
 
 @app.route('/routines/<userId>')
 def routines(userId):
-    thisUser = User(userId=userId)
-    if thisUser == None :
-        return jsonify(error="User not found")
-    return thisUser.getRoutines()
+    try:
+        thisUser = User(userId=userId)
+        if thisUser == None :
+            return jsonify(error="User not found")
+        return thisUser.getRoutines()
+    except :
+        raise
     
 
 ###
@@ -46,7 +49,7 @@ def routines(userId):
 def buddies(userId):
 
     thisAuthUser = AuthenticatedUser(userId)
-    if thisAuthUser == None
+    if thisAuthUser == None:
         return jsonify(error="User not found")
     return thisAuthUser.getFriendSuggestions()
 
