@@ -1,4 +1,5 @@
 from config import *
+
 class Goal :
 
 	def __init__(self, trophyId) :
@@ -24,12 +25,13 @@ class Goal :
 			result = json.loads(connection.getresponse().read().decode('utf-8'))
 
 		if not result :
-			return None # Error: Goal does not exist
+			return jsonify(error="Goal not found")
 
 		self.distance = result['distance']
 
 		if 'minutes' in result :
-			self.time = result['minutes']
+			self.time = result['minutes']*60
+			# Timedeltas only give us values in seconds so better to have this as seconds for comparison
 		else :
 			self.time = 0
 
@@ -58,6 +60,6 @@ class Goal :
 			return self.setCompleted()
 
 		if 'updatedAt' in result :
-			return json.dumps(self.objectId)
+			return jsonify(goal=self.objectId)
 		else :
-			return None # Error: Error updating database
+			return jsonify(error="Error updating database")

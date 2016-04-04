@@ -7,6 +7,8 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 
 import os
 from flask import Flask, render_template, request, redirect, url_for
+from flask.ext.cors import CORS, cross_origin
+
 import logging
 from User import User, AuthenticatedUser
 from Run import Run
@@ -14,7 +16,7 @@ from Goal import Goal
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'this_should_be_configured')
+CORS(app)
 
 
 ###
@@ -31,9 +33,10 @@ def home():
 @app.route('/routines/<userId>')
 def routines(userId):
     thisUser = User(userId=userId)
-    print(thisUser)
+    if thisUser == None :
+        return jsonify(error="User not found")
     return thisUser.getRoutines()
-
+    
 
 ###
 # The functions below should be applicable to all Flask apps.
@@ -43,20 +46,20 @@ def routines(userId):
 def buddies(userId):
 
     thisAuthUser = AuthenticatedUser(userId)
-
+    if thisAuthUser == None
+        return jsonify(error="User not found")
     return thisAuthUser.getFriendSuggestions()
-
 
 
 @app.route('/checkTrophies' , methods=['GET'])
 def checkTrophies():
     userId = request.args.get('userId')
     runId = request.args.get('runId')
-
     thisRunner = AuthenticatedUser(userId)
+    if thisRunner == None :
+        return jsonify(error="User not found")
     thisRun = Run(thisRunner.sessionToken, runId)
-
-    #   thisRun.getTrophies()
+    return thisRun.getTrophies()
 
 @app.after_request
 def add_header(response):
@@ -74,6 +77,9 @@ def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
 
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error('Server Error: %s', (error))
 
 if __name__ == '__main__':
     app.run(debug=True)

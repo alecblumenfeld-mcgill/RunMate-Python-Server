@@ -1,8 +1,5 @@
 from config import *
 
-def restartConnection() :
-    connection.close()
-    connection.connect()
 class User:
 
 	def __init__(self, **args) :
@@ -22,10 +19,10 @@ class User:
 				user = tempUser[0]
 			else :
 				self.error = True
-				return None # Error: User not found
+				return None
 
 		if 'code' in user :
-			return None # Error: User does not exist
+			return None
 
 		if 'runNum' in user :
 			# User has not gone on any runs
@@ -53,6 +50,9 @@ class User:
 			self.accessToken = user['authData']['facebook']['access_token']
 		else :
 			self.accessToken = None
+
+		if 'name' in user :
+			self.name = user['name']
 
 		self.userId = user['objectId']
 
@@ -145,7 +145,7 @@ class User:
 	def getAllRoutines(self) :
 
 		if self.goalWeight>self.weight :
-			return None # Error: goalWeight higher than current weight
+			jsonify(error="Goal weight higher than current weight")
 
 		if self.avgDistance == 0 :
 			avgDist = 4 # Default value for run variations
@@ -172,7 +172,7 @@ class User:
 		routines = self.getAllRoutines()
 
 		if routines == None :
-			return None # Error: Unable to calculate; suggest adding more time
+			return jsonify(error="Unable to calculate routines, please allot more time to reach your goal weight")
 
 		suggestions = []
 		# Remove duplicates
@@ -191,11 +191,9 @@ class User:
 					break
 
 		if suggestions == [] :
-			# If None is returned, show error message saying that the user needs to allot more time for their goal weight loss
-			return None 
+			return jsonify(error="Unable to calculate routines, please allot more time to reach your goal weight")
 		else :
-			return json.dumps(suggestions, sort_keys=True, indent=2)
-			
+			return jsonify(routines=suggestions)
 class AuthenticatedUser(User) :
 
 	def __init__(self, userId) :
@@ -257,25 +255,34 @@ class AuthenticatedUser(User) :
 		avgList = []
 		suggestions = []
 
-		for f in friends['data'] :
-			fId = f['id']
+		try :
+			for f in friends['data'] :
+				fId = f['id']
 
-			# Retrieve user object per friend
+				# Retrieve user object per friend
 
-			friend = User(param1="facebookIdPublic", param2=fId)
-			if friend.error == True :
-				friend.userId = 0
+				friend = User(param1="facebookIdPublic", param2=fId)
+				if friend.error == True :
+					break
 
-			# TODO: Factor in runs per week if possible
-			# TODO: Consider mutual friends
-			if friend.userId != 0 :
-				if friend.avgDistance == 0 :
-					noneList.append(friend.userId)
-				else :
-					avgList.append([friend.userId, friend.avgDistance])
+				# TODO: Factor in runs per week if possible
+				# TODO: Consider mutual friends
+				if friend.userId != 0 :
+					if friend.avgDistance == 0 :
+						noneList.append(friend.name)
+					else :
+						avgList.append([friend.name, friend.avgDistance])
+		except KeyError:
+			return jsonify(error="No friends found")
 
-		if not avgList :
-			return None # Error: No suggestions, your friends have not gone on any runs yet
+		if (not avgList) & (not noneList) :
+			suggestions = []
+		elif (not avgList) & (len(noneList)) <= 3 :
+			for i in noneList :
+				suggestions.append(i)
+		elif (not avgList) & (len(noneList)) >3 :
+			for i in noneList[:3] :
+				suggestions.append(i[0])
 		elif len(avgList) <= 3 :
 			for val in avgList :
 				suggestions.append(val[0])
@@ -295,18 +302,8 @@ class AuthenticatedUser(User) :
 					suggestions.append(val[0])
 
 		if suggestions == [] :
-			return None
+			return jsonify(error="No friends found")
 		else :
 			newList = []
-			for s in suggestions:
-			#return json.dumps(suggestions, sort_keys=True, indent=2)
-				newList.append(json.dumps({ 
-					"user":{
-				        "__type": "Pointer",
-				        "className": "_User",
-				        "objectId": s
-				    }
-				}, sort_keys=True))
-			return json.dumps(newList)
-if __name__ == '__main__':
-	print(AuthenticatedUser(userId="MO77PuoPBt").getFriendSuggestions())
+			return jsonify(users=suggestions)
+		return jsonify(error="No friends found")
