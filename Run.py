@@ -67,7 +67,6 @@ class Run :
 		     })
 			results = json.loads(connection.getresponse().read().decode('utf-8'))['results']
 		except ValueError:
-			print("ValueError")
 			return jsonify(error="RunLocs missing for run")
 
 		for runLoc in results :
@@ -77,6 +76,8 @@ class Run :
 		return locList
 
 	def getTrophies(self) :
+
+		goalsCompleted = []
 
 		if self.error == True :
 			return jsonify(error="Run not found")
@@ -99,9 +100,12 @@ class Run :
 		for t in trophyList :
 			goal = Goal(str(t['objectId']))
 			if self.checkTrophy(goal) :
-				#print("woohoo")
-				return goal.setCompleted()
-		return jsonify(error="No goals completed")
+				goalsCompleted.append(goal.setCompleted())
+		
+		if goalsCompleted == [] :
+			return jsonify(error="No goals completed")
+		else :
+			return jsonify(goals=goalsCompleted)
 
 	def findNearest(self, array, value):
 	    idx = (np.abs(array-value)).argmin()
@@ -123,24 +127,15 @@ class Run :
 				l = np.arange(0.0, loops, .1)
 				for i in l :
 					startMile = i
-					#print ("startMile = %s" % startMile)
 					endMile = i + goal.distance
-					#print ("endMile = %s" % endMile)
 					startInfo = self.findNearest(self.runDistances, startMile)
-					#print("startInfo = %s" % startInfo)
 					endInfo = self.findNearest(self.runDistances, endMile)
-					#print("endInfo = %s" % endInfo)
 					for d in self.runData :
 						if (d[0] == startInfo) :
 							startInfo = d
-							print(d)
 						if (d[0] == endInfo) :
 							endInfo = d
-							print(d)
 					diffTime = endInfo[1] - startInfo[1]
-					#print(diffTime)
-					#print(goal.time)
-					if diffTime.seconds == goal.time :
-						#print("yes")
+					if diffTime.seconds <= goal.time :
 						return True
 				return False

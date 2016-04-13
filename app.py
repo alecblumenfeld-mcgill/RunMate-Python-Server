@@ -48,21 +48,27 @@ def routines(userId):
 @app.route('/buddies/<userId>')
 def buddies(userId):
 
-    thisAuthUser = AuthenticatedUser(userId)
-    if thisAuthUser == None:
-        return jsonify(error="User not found")
-    return thisAuthUser.getFriendSuggestions()
+    try :
+        thisAuthUser = AuthenticatedUser(userId)
+        if thisAuthUser == None:
+            return jsonify(error="User not found")
+        return thisAuthUser.getFriendSuggestions()
+    except :
+        return jsonify(error="None of your facebook friends have downloaded RunMate!")
 
 
 @app.route('/checkTrophies' , methods=['GET'])
 def checkTrophies():
-    userId = request.args.get('userId')
-    runId = request.args.get('runId')
-    thisRunner = AuthenticatedUser(userId)
-    if thisRunner == None :
-        return jsonify(error="User not found")
-    thisRun = Run(thisRunner.sessionToken, runId)
-    return thisRun.getTrophies()
+    try :
+        userId = request.args.get('userId')
+        runId = request.args.get('runId')
+        thisRunner = AuthenticatedUser(userId)
+        if thisRunner == None :
+            return jsonify(error="User not found")
+        thisRun = Run(thisRunner.sessionToken, runId)
+        return thisRun.getTrophies()
+    except :
+        return jsonify(error="No goals completed")
 
 @app.after_request
 def add_header(response):

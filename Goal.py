@@ -60,6 +60,6 @@ class Goal :
 			return self.setCompleted()
 
 		if 'updatedAt' in result :
-			return jsonify(goal=self.objectId)
+			return self.objectId
 		else :
-			return jsonify(error="Error updating database")
+			return None
