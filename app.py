@@ -10,6 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask.ext.cors import CORS, cross_origin
 
 import logging
+from config import *
 from User import User, AuthenticatedUser
 from Run import Run
 from Goal import Goal

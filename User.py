@@ -59,19 +59,15 @@ class User:
 		if 'code' in user :
 			return None
 		
-		if self.runNum != 0 :
-			self.avgDistance = self.getTotalDistance()
-			self.avgDistance = self.avgDistance/self.runNum
+		if 'totalDistance' in user :
+			self.totalDistance = user['totalDistance']
 		else :
-			self.avgDistance = 0
+			self.totalDistance = 0
 			
 		if self.runNum != 0 :
-			self.avgDistance = self.getTotalDistance()
-			self.avgDistance = self.avgDistance/self.runNum
+			self.avgDistance = self.totalDistance/self.runNum
 		else :
 			self.avgDistance = 0
-
-		self.totalDistance = self.getTotalDistance()
 
 	def connection(self, userId) :
 		try :
@@ -112,28 +108,6 @@ class User:
 			except :
 				restartConnection()
 				return self.paramConnection(cl, params)
-
-	def getTotalDistance(self) :
-
-		if self.runNum == 0 :
-			return 0
-
-		params = urllib.parse.urlencode({"where":json.dumps({ 
-					'userObjId': self.userId
-				})}, {"order":"-timestamp"})
-
-		res = self.paramConnection("RunLocation", params)['results']
-
-		currentRun = 0
-		sumRuns = 0
-		for item in res :
-			if item['userObjId'] == self.userId :
-				if item['runHash'] != currentRun :
-					sumRuns = sumRuns+(item['distance']*0.00062137) # Currently recording in meters
-					currentRun = item['runHash']
-		totalDist = sumRuns
-
-		return totalDist
 
 	def subsetSum(self, maxNum, i, possibleRoutines, numbers, target, partial=[]) :
 
@@ -258,8 +232,8 @@ class AuthenticatedUser(User) :
 	def serializeFriendObject(self, friend) :
 		return {
             'user_name': friend[0],
-            'avg_distance': np.around(friend[1], decimals = 2),
-            'total_distance': np.around(friend[2], decimals = 2),
+            'avg_distance': np.around(friend[1], decimals = 2).astype(float),
+            'total_distance': np.around(friend[2], decimals = 2).astype(float),
             'object_id' : friend[3]
             }
 
@@ -284,7 +258,7 @@ class AuthenticatedUser(User) :
 				
 				if friend.userId != 0 :
 					if friend.avgDistance == 0 :
-						noneList.append(friend.name)
+						noneList.append([friend.name, friend.avgDistance, friend.avgDistance, friend.totalDistance, friend.userId])
 					else :
 						avgList.append([friend.name, friend.avgDistance, friend.avgDistance, friend.totalDistance, friend.userId])
 		except KeyError:
@@ -295,7 +269,7 @@ class AuthenticatedUser(User) :
 		elif (len(avgList) == 0) & (len(noneList)<=3) :
 			for i in noneList :
 				suggestions.append([i[0], i[2], i[3], i[4]])
-		elif (len(avgList) == 0) & (len(noneList)) >3 :
+		elif (len(avgList) == 0) & (len(noneList)>3) :
 			for i in noneList[:3] :
 				suggestions.append([i[0], i[2], i[3], i[4]])
 		elif len(avgList) <= 3 :
@@ -315,9 +289,7 @@ class AuthenticatedUser(User) :
 				avgList = sorted(avgList, key=itemgetter(1))
 				for val in avgList[:3] :
 					suggestions.append([val[0], val[2], val[3], val[4]])
-
 		if suggestions == [] :
 			return jsonify(error="No friends found")
 		else :
 			return jsonify(user=[self.serializeFriendObject(x) for x in suggestions])
-		return jsonify(error="No friends found")
